@@ -1,4 +1,4 @@
- requirements.txtappnope==0.1.0
+appnope==0.1.0
 backcall==0.2.0
 certifi==2020.4.5.2
 chardet==3.0.4
