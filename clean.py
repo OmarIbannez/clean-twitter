@@ -12,7 +12,7 @@ USERNAME = ""
 LIMIT = 3200
 
 
-def argument_parser():
+def argument_parser() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Clean your twitter account.")
     parser.add_argument(
         "-w", "--words", nargs="*", help="List of comma separated words."
@@ -41,13 +41,13 @@ def argument_parser():
     return parser.parse_args()
 
 
-def get_api(consumer_key, consumer_secret, access_token, access_token_secret):
+def get_api(consumer_key: str, consumer_secret: str, access_token: str, access_token_secret: str) -> tweepy.API:
     auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
     return tweepy.API(auth)
 
 
-def get_tweets_data_frame(api, username, limit):
+def get_tweets_data_frame(api: tweepy.API, username: str, limit: int) -> pd.DataFrame:
     cursor = tweepy.Cursor(api.user_timeline, id=username, include_rts=True)
     data = [
         [tweet.id, tweet.created_at, tweet.retweeted, tweet.text]
@@ -56,25 +56,25 @@ def get_tweets_data_frame(api, username, limit):
     return pd.DataFrame(data, columns=["id", "created_at", "retweeted", "text"])
 
 
-def filter_data_frame(df, words):
+def filter_data_frame(df: pd.DataFrame, words: list) -> pd.DataFrame:
     return df[df["text"].str.contains("|".join(words), case=False)]
 
 
-def delete_tweet(api, tweet_id):
+def delete_tweet(api: pd.DataFrame, tweet_id: str) -> None:
     try:
         api.destroy_status(tweet_id)
     except TweepError:
         pass
 
 
-def unretweet(api, tweet_id):
+def unretweet(api: tweepy.API, tweet_id: str) -> None:
     try:
         api.unretweet(tweet_id)
     except TweepError:
         pass
 
 
-def nuke(api, username, words, limit):
+def nuke(api: tweepy.API, username: str, words: list, limit: int) -> pd.DataFrame:
     df = get_tweets_data_frame(api, username, limit)
     fdf = filter_data_frame(df, words)
     for index, row in fdf.iterrows():
